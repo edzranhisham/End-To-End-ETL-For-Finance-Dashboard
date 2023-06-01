@@ -5,11 +5,10 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException,StaleElementReferenceException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-import time
-import getpass
-import os
-from datetime import datetime
+import time, getpass, os, platform, boto3
 
+#---------------------#
+# REUSABLE FUNCTIONS
 def switch_to_frame(driver, frame_element):
     # Switch to the specified frame, handling stale element reference exception
     tries = 3
@@ -22,24 +21,54 @@ def switch_to_frame(driver, frame_element):
             time.sleep(1)
     return False
 
-# Get the absolute path of the current script file
-script_path = os.path.dirname(os.path.abspath(__file__))
+def wait_for_download_completion(download_directory):
+    # Wait for the download to complete and return the newest downloaded file
+    def latest_download_file():
+        path = download_directory
+        os.chdir(path)
+        files = sorted(os.listdir(os.getcwd()), key=os.path.getmtime)
+        newest = files[-1]
+        return newest
 
-# Construct the path to the "Transactions_CSV" folder within your repository
-directory_path = os.path.join(script_path, "Transactions_CSV")
+    fileends = "crdownload"  # crdownload = Chrome Download
+    while fileends == "crdownload":
+        time.sleep(1)
+        newest_file = latest_download_file()
+        if "crdownload" in newest_file:
+            fileends = "crdownload"
+        else:
+            fileends = "none"
+    
+    return newest_file
 
-# Create the "Transactions_CSV" folder if it doesn't exist
-if not os.path.exists(directory_path):
-    os.makedirs(directory_path)
 
-# Configure Chrome options
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_experimental_option("prefs", {
-    "download.default_directory": directory_path
-})
+def upload_file_to_s3(file_path, bucket_name, s3_folder, aws_access_key_id, aws_secret_access_key, s3_filename):
+    # Create an S3 client
+    s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
-# Create a new instance of the Chrome driver with the configured options
-driver = webdriver.Chrome(options=chrome_options)
+    # Upload the file to the S3 bucket with the desired filename
+    s3_key = s3_folder + '/' + s3_filename
+    s3_client.upload_file(file_path, bucket_name, s3_key)
+
+#---------------------#
+
+# Get the default download directory based on the operating system
+system = platform.system()
+if system == "Windows":
+    download_directory = os.path.expanduser("~/Downloads")
+elif system == "Darwin":  # macOS
+    download_directory = os.path.expanduser("~/Downloads")
+elif system == "Linux":
+    download_directory = os.path.expanduser("~/Downloads")
+else:
+    print("Unsupported operating system:", system)
+    download_directory = ""
+
+# Print the download directory
+print("Default Download Directory:", download_directory)
+    
+# Create a new instance of the Chrome driver
+driver = webdriver.Chrome()
 driver.maximize_window()
 time.sleep(3)
         
@@ -158,8 +187,11 @@ try:
                                     time.sleep(3)
                                     ddDateRange = wait.until(EC.element_to_be_clickable((By.ID, "specifyPeriod")))
                                     ddDateRange.click()
+                                    time.sleep(3)
                                     
-                                    ddTdyDate = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".today.active.start-date.available.in-range")))
+                                    #ERROR - CANNOT FIND THE LATEST DATE ANYMORE
+                                    ddTdyDate = driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/table/tbody/tr[1]/td[5]')
+                                    #ddTdyDate = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".today.active.start-date.available.in-range")))
                                     ddTdyDate.click()
                                     time.sleep(3)
                                     
@@ -170,32 +202,20 @@ try:
                                     transactionDownloadIcon = wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/section/div/form/div/div/form/div[3]/div[2]/div/a[1]')))
                                     transactionDownloadIcon.click()
                                     
-                                    def latest_download_file():
-                                        path = directory_path
-                                        os.chdir(path)
-                                        files = sorted(os.listdir(os.getcwd()), key=os.path.getmtime)
-                                        newest = files[-1]
+                                    aws_access_key_id = 'AKIA2JVX452SDF5FZL3Q'
+                                    aws_secret_access_key = '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'
+                                    bucket_name = 'personal-finance-edz-ly'
+                                    s3_folder = 'raw'
 
-                                        return newest
+                                    # Specify the filename for the uploaded file in S3
+                                    s3_filename = "transactions_" + time.strftime("%d%m%y") + ".csv"
 
-                                    fileends = "crdownload" #crdownload = Chrome Download
-                                    while "crdownload" == fileends:
-                                        time.sleep(1)
-                                        newest_file = latest_download_file()
-                                        if "crdownload" in newest_file:
-                                            fileends = "crdownload"
-                                        else:
-                                            fileends = "none"
-                                    
-                                    # Rename the downloaded file to the desired format
-                                    new_filename = "transactions_" + time.strftime("%d%m%y") + ".csv"
-                                    new_filepath = os.path.join(directory_path, new_filename)
-                                    os.rename(os.path.join(directory_path, newest_file), new_filepath)
-                                
-                                    print("Downloaded file renamed successfully!")
+                                    newest_file = wait_for_download_completion(download_directory)
 
-                                    #TEMPORARY!!! JUST USING FOR TESTING PURPOSES TO ENSURE BROWSER DOESNT CLOSE
-                                    input("Press Enter to close the browser...")
+                                    upload_file_to_s3(os.path.join(download_directory, newest_file), bucket_name, s3_folder, aws_access_key_id, aws_secret_access_key, s3_filename)
+
+                                    print("File uploaded to S3 successfully!")
+
                         else:
                             print("failed to switch the desired iframe")
                        
