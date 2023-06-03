@@ -187,12 +187,21 @@ try:
                                     time.sleep(3)
                                     ddDateRange = wait.until(EC.element_to_be_clickable((By.ID, "specifyPeriod")))
                                     ddDateRange.click()
-                                    time.sleep(3)
-                                    
-                                    #ERROR - CANNOT FIND THE LATEST DATE ANYMORE
-                                    ddTdyDate = driver.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/table/tbody/tr[1]/td[5]')
+
+                                    #---------------#
+                                    #Couldnt find the element with this statement anymore
                                     #ddTdyDate = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".today.active.start-date.available.in-range")))
-                                    ddTdyDate.click()
+                                    #ddTdyDate.click()
+                                    # --------------#
+                                    
+                                    #Changed to this statement
+                                    #There are 2 elements with the same name, the only difference is if its hidden or not
+                                    #The 1st element is the hidden element
+                                    #The 2nd element is the visible element, so in this case, we want the visible element
+                                    ddElementsTdyDate = driver.find_elements(By.CSS_SELECTOR, ".today.active.start-date.available.in-range")
+                                    if len(ddElementsTdyDate) >= 2:
+                                        ddTdyDate = ddElementsTdyDate[1]
+                                        ddTdyDate.click()
                                     time.sleep(3)
                                     
                                     transactionGoBtn = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="search-more"]/div[1]/div[5]/button')))
