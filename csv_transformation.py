@@ -4,81 +4,12 @@ import numpy as np
 import pandas as pd
 import os
 from os import listdir
+import fsspec
 import inspect
 import sys
 
-
-# link to source folder directory
-folderPath = "/Users/mac/Desktop/VSCode/Projects/Development-Personal-Finance/src_transactions/"
-
-
-# ~~~ GET FILENAMES ~~~ #
-
-# get list of filenames in directory
-def find_csv_filenames(path_to_dir, suffix='.csv'):
-    filenames = listdir(path_to_dir)
-    return[filename for filename in filenames if filename.endswith(suffix)]
-
-filenames = find_csv_filenames(folderPath, suffix=".csv")
-
-for csv in filenames:
-    print(csv)
-
-
-# ~~~ GET LATEST FILE NAME ~~~ #
-
-# extract the dates from filenames and convert string to integer
-dates = [int(csv.split('_')[1][:6]) for csv in filenames]
-
-# get the index of the latest date
-maxDate = str(max(dates))
-
-# get the latest filename
-latestFile = 'transactions_' + maxDate + '.csv'
-
-
-
-# ~~~ READING CSV ~~~ #
-
-# read latest file starting from row 7
-df = pd.read_csv(folderPath + latestFile, skiprows=6, index_col=False)
-
-# drop missing rows with missing value in all columns
-df = df.dropna(how='all')
-
-# preview final dataframe
-df.head()
-
-print(df.columns)
-
-
-# ~~~ SAVE PREPARED CSV ~~~ #
-
-# get current working directory
-script_path = os.path.abspath(os.getcwd())
-
-# appened desired folder path to store prepared transactions
-filePath = os.path.join(script_path, "prepared_transactions")
-
-# appened desired file name to folder path
-# e.g. ../prepared_transactions/transactions_1900523.csv
-fileNamePath = os.path.join(filePath, latestFile)
-
-# create "prepared_transactions" folder if not exist
-if not os.path.exists(filePath):
-    os.makedirs(filePath)
-
-# convert to csv and load to desired local folder
-df.to_csv(fileNamePath, index=False)
-
-
-# ~~~ LOAD PREPARED CSV INTO S3 BUCKET ~~~ #
-
-# connect to s3 bucket 
-
-# load csv into s3 bucket
-
-import boto3
+import boto3 
+import s3fs # s3 data transfer
 
 # establish session with your aws account
 session = boto3.Session( 
@@ -86,20 +17,63 @@ session = boto3.Session(
          aws_secret_access_key='1TTh6KELTJ+CFDUIlC4ov4GNC5ItTGYSSAYgZ9+8',
          region_name='us-east-1')
 
-# function to upload prepared csv to s3 bucket
-def upload_csv_to_s3(file_path, bucket_name, key):
-    s3 = session.client('s3')
-    s3.upload_file(file_path, bucket_name, key)
+# ~~~ LIST FILES IN RAW FOLDER ~~~ #
+s3 = session.client('s3')
 
-# Specify the name of your S3 bucket and Key
-bucket_name = 'personal-finance-edz-ly'
+# empty list to store file names
+s3fileList = []
 
-key = 'prepared/' + latestFile # e.g. raw/transactions_190523.csv
+def list_s3_contents(bucket_name, prefix):
+        
+        # list_objects_v2 returns dict response of metadata details for all files present in raw folder
+        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix) 
+        
+        # only extract values in Key value "Contents"
+        # Value in the Key "Contents" is a list of nested dictionaries
+        # iterate through the list, and for each dictionary, extract the value for the Key "Key"
+        # the Key "Key" contains file name values 
+        for i in range(len(response['Contents'])):
+                if i > 0: # index 0 contains redundant value "raw/", thus start extracting from index 1
+                    file = response['Contents'][i]['Key'].replace('raw/', '')
+                    s3fileList.append(file)
+        s3fileList
 
-# Specify the local file path containing the prepared csv
-file_path = fileNamePath
+list_s3_contents('personal-finance-edz-ly','raw/')
 
-# Upload the CSV file to the specified S3 bucket and folder
-upload_csv_to_s3(file_path, bucket_name, key)
+# ~~~ GET LATEST FILE NAME ~~~ #
+
+# extract the dates from filenames and convert string to integer
+datesList = []
+for csv in s3fileList:
+    csv.split('_')
+    datesList.append(csv.split('_')[1][:6])
+
+# get the index of the latest date
+maxDate = str(max(datesList))
+
+# get the latest filename
+latestFilename = 'transactions_' + maxDate + '.csv'
+
+# ~~~ READING CSV ~~~ #
+# Read a CSV file on S3 into a pandas data frame "df_latestFile" for manipulation
+
+# s3 url to file in raw folder
+s3url = os.path.join('s3://','personal-finance-edz-ly/','raw/',latestFilename)
+
+aws_credentials = { "key": "AKIA2JVX452SKNWQ6LZ6", "secret": "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" }
+
+df_latestFile = pd.read_csv(s3url, storage_options=aws_credentials, skiprows=17, index_col=False)
+
+# drop missing rows with missing value in all columns
+df_latestFile = df_latestFile.dropna(how='all')
+
+
+# ~~~ LOAD PREPARED DATAFRAME INTO S3 BUCKET ~~~ #
+
+# s3 url to file in prepared folder
+s3url = os.path.join('s3://','personal-finance-edz-ly/','prepared/',latestFilename)
+
+# load csv into s3 bucket
+df_latestFile.to_csv(s3url,index=False,storage_options=aws_credentials)
 
 # ~~~ END ~~~ #
