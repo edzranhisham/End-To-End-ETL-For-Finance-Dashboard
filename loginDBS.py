@@ -188,19 +188,16 @@ try:
                                     ddDateRange = wait.until(EC.element_to_be_clickable((By.ID, "specifyPeriod")))
                                     ddDateRange.click()
 
-                                    #---------------#
-                                    #Couldnt find the element with this statement anymore
-                                    #ddTdyDate = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".today.active.start-date.available.in-range")))
-                                    #ddTdyDate.click()
-                                    # --------------#
-                                    
-                                    #Changed to this statement
+                                    #Currently there are 2 ways to go about selecting the date, 1 is through the hidden and the other through normal route
                                     #There are 2 elements with the same name, the only difference is if its hidden or not
                                     #The 1st element is the hidden element
                                     #The 2nd element is the visible element, so in this case, we want the visible element
-                                    ddElementsTdyDate = driver.find_elements(By.CSS_SELECTOR, ".today.active.start-date.available.in-range")
-                                    if len(ddElementsTdyDate) >= 2:
-                                        ddTdyDate = ddElementsTdyDate[1]
+                                    ddElementsTdyDates = driver.find_elements(By.CSS_SELECTOR, ".today.active.start-date.available.in-range")
+                                    if len(ddElementsTdyDates) >= 2:
+                                        ddTdyDates = ddElementsTdyDates[1]
+                                        ddTdyDates.click()
+                                    else:
+                                        ddTdyDate = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".today.active.start-date.available.in-range")))
                                         ddTdyDate.click()
                                     time.sleep(3)
                                     
