@@ -7,6 +7,7 @@ from os import listdir
 import fsspec
 import inspect
 import sys
+from datetime import datetime
 
 import boto3 
 import s3fs # s3 data transfer
@@ -43,16 +44,28 @@ list_s3_contents('personal-finance-edz-ly','raw/')
 # ~~~ GET LATEST FILE NAME ~~~ #
 
 # extract the dates from filenames and convert string to integer
-datesList = []
+dateNumList = []
 for csv in s3fileList:
     csv.split('_')
-    datesList.append(csv.split('_')[1][:6])
+    dateNumList.append(csv.split('_')[1][:6])
 
-# get the index of the latest date
-maxDate = str(max(datesList))
+# convert each date string to integer, then to date type
+dateList = []
+for dateNum in dateNumList:
+    day = int(dateNum[:2])
+    month = int(dateNum[2:4])
+    year = int(dateNum[4:]) + 2000
+    
+    date = datetime(year, month, day).date()
+    dateList.append(date)
+
+# get the max date type
+latestDate = max(dateList)
+
+formatted_date = latestDate.strftime('%d%m%y')
 
 # get the latest filename
-latestFilename = 'transactions_' + maxDate + '.csv'
+latestFilename = 'transactions_' + formatted_date + '.csv'
 
 # ~~~ READING CSV ~~~ #
 # Read a CSV file on S3 into a pandas data frame "df_latestFile" for manipulation
