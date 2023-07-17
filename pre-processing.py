@@ -218,6 +218,19 @@ updatedTransactions = spark.sql("""
 
 updatedTransactions.show(n=50, truncate=False)
 
-### To continue:
 # load to database
+
+# import packages
+import psycopg2
+import pandas as pd
+from sqlalchemy import create_engine
+
+# establish connections
+conn_string = 'postgres://postgres:pass@localhost/personal-finance'
+
+db = create_engine(conn_string)
+conn = db.connect()
+
+# converting data to sql
+updatedTransactions.to_sql('transactions', conn, if_exists= 'replace')
 
