@@ -42,6 +42,9 @@
 - Check container status via docker ps
 - Test airflow via localhost:8080
 
+# Enabling AWS Connection
+- follow steps to save credentials in airflow ui to enable aws connection for S3 hook
+
 # Running Spark jobs
 - follow steps noted down in onenote
 
