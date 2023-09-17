@@ -22,7 +22,7 @@ Project is comprised of mainly 2 parts:
 2. Pre-processing scripts (tasks to be executed)
 
 The pipeline architecture - author's interpretation:
-![data-architecture-v2 1](https://github.com/edzranhisham/End-To-End-ETL-For-Finance-Dashboard-VIZ/assets/91733415/591f7cf4-849e-4aff-965a-de4497edcc19)
+![data-architecture-v2 1](https://github.com/edzranhisham/End-To-End-ETL-For-Finance-Dashboard/assets/91733415/6f747be3-e21f-41d5-aada-b473e9f0d5a6)
 Note: Since this project was built for learning purposes and as an example, it functions only for a single scenario and data schema.
 
 
@@ -30,10 +30,10 @@ Note: Since this project was built for learning purposes and as an example, it f
 Weekly transaction history data exported into CSV from DBS iBanking portal.
 
 ## Data Understanding
-![data-understanding](https://github.com/edzranhisham/End-To-End-ETL-For-Finance-Dashboard-VIZ/assets/91733415/6d4330a3-a433-41e8-b577-8b969f1af5bc)
+![data-understanding](https://github.com/edzranhisham/End-To-End-ETL-For-Finance-Dashboard/assets/91733415/fb1bf715-2505-4fa6-a8c8-93ba2f8971d1)
 
 ## Data Model
-![data-model](https://github.com/edzranhisham/End-To-End-ETL-For-Finance-Dashboard-VIZ/assets/91733415/e35e36e8-1dd0-4e15-824b-8c35b3f00a81)
+![data-model](https://github.com/edzranhisham/End-To-End-ETL-For-Finance-Dashboard/assets/91733415/1c3d390c-cbeb-481a-91f4-91b65b69c64b)
 
 ## Pre-requisites
 - Docker
@@ -43,7 +43,7 @@ Weekly transaction history data exported into CSV from DBS iBanking portal.
 
 ## ETL Steps/Tasks undertaken in Pipeline
 
-https://github.com/edzranhisham/End-To-End-ETL-For-Finance-Dashboard-VIZ/assets/91733415/a36fbcbb-0833-469c-85f5-fac46aed140c
+https://github.com/edzranhisham/End-To-End-ETL-For-Finance-Dashboard/assets/91733415/068c58d9-5f61-4c1e-a815-9669c65b476e
 
 ### Ingest
 **extract_getLatestDate()**
