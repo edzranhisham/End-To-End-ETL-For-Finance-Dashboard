@@ -35,7 +35,7 @@ csv_file = spark.createDataFrame(df)
 # Avoid redundant Column Operations - Consolidate operations of 'regexp_replace' function to make code more efficient
 # Minimize dataframe materialization - Avoid creating too many intermediate 'temp' dataframes to reduce memory usage
 cTmp1 = csv_file \
-    .replace("5264-7110-3357-3710", "My DBS Account") \
+    .replace("8888-8888-8888-8888", "My DBS Account") \
     .withColumn("Transaction Ref1", regexp_replace("Transaction Ref1", " SI NG.*|From: |To: |TO: ", "")) \
     .withColumn("Transaction Ref2", regexp_replace("Transaction Ref2", " SI NG.*|From: |To: |TO: ", ""))
 

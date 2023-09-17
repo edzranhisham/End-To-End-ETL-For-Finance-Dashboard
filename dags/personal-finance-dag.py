@@ -60,7 +60,7 @@ def pipeline():
                 
                 # ~~~ START: list files in s3 raw folder ~~~ #
                 
-                response = hook.list_keys(bucket_name='personal-finance-edz-ly', prefix='raw/')
+                response = hook.list_keys(bucket_name='bucket-name', prefix='raw/')
                 # results: ['raw/', 'raw/transactions_010623.csv', 'raw/transactions_030623.csv', 'raw/transactions_140623.csv', 'raw/transactions_310823.csv']
 
                 
@@ -124,7 +124,7 @@ def pipeline():
                 # s3 url to file in raw folder
                 
                 file = hook.download_file(key = latestFilename, 
-                                          bucket_name = 'personal-finance-edz-ly')
+                                          bucket_name = 'bucket-name')
 
                 # start reading from row 18 onwards
                 df_latestFile = pd.read_csv(file, skiprows=17, index_col=False, sep='\,')

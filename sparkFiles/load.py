@@ -1,7 +1,7 @@
 import psycopg2
 
 # Database connection parameters
-host = "192.168.1.15"  # Use the host's IP address
+host = "<host-ip>"  # Use the host's IP address
 port = 5432  # Default PostgreSQL port
 dbname = "personal-finance"
 user = "postgres"
