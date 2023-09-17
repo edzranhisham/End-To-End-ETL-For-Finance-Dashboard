@@ -1,0 +1,9 @@
+apache-airflow
+numpy
+pandas
+boto3
+s3fs
+fsspec
+pyspark
+apache-airflow-providers-apache-spark
+psycopg2-binary
