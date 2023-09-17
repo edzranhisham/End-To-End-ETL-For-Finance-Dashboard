@@ -29,9 +29,9 @@ defaultArgs = {
 
 @dag(
       dag_id = "personal-finance-dag",
-      schedule_interval = '@daily',
+      schedule_interval = '@weekly', # run once a week at midnight on Sundary morning 
       default_args = defaultArgs,
-      catchup=False
+      catchup=False # Optional: don't backfill old runs
 )
 
 # DEFINE PIPELINE
