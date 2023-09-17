@@ -114,12 +114,5 @@ output = updatedTransactions.toPandas()
 output.to_csv(r'/opt/airflow/data/transformJoinTransactions.csv', index=False, mode='w')
 
 
-# set up the connection to the Postgres database
-#conn = psycopg2.connect(f'dbname={dbname} host={host} port={port} user={user} password={password}')
-
-# start a cursor to perform database operations
-#cursor = conn.cursor()
-
-
 
 
